@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Получение ссылки</title>
+</head>
+<body>
+<h1>Получение ссылки</h1>
+<form method="post" action="get-link">
+    <label>Имя пользователя: <input type="text" name="userName" required></label><br>
+    <label>Строка: <input type="text" name="shortLink" required></label><br>
+    <button type="submit">Получить ссылку</button>
+</form>
+<div th:if="${origLink != null}">
+    <h3>Полученная ссылка:</h3>
+    <p th:text="${origLink}"></p>
+</div>
+<a href="/generate">Перейти к странице генерации ссылки</a>
+</body>
+</html>

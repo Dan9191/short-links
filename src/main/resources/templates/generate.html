@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Генерация ссылки</title>
+</head>
+<body>
+<h1>Генерация строки</h1>
+<form method="post" action="generate" required>
+    <label>Имя пользователя: <input type="text" name="userName"></label><br>
+    <label>Время действия до:
+        <input type="text" name="toDate" placeholder="yyyy-MM-dd HH:mm">
+    </label><br>
+    <label>Количество применений: <input type="number" name="remainder" required></label><br>
+    <label>Оригинальная ссылка: <input type="text" name="origLink" required></label><br>
+    <button type="submit">Сгенерировать</button>
+</form>
+<div th:if="${shortLink != null}">
+    <h3>Сгенерированная ссылка:</h3>
+    <p th:text="${shortLink}"></p>
+</div>
+<a href="/get-link">Перейти к странице получения ссылки</a>
+</body>
+</html>
