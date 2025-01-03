@@ -1,7 +1,7 @@
 package dan.hw.short_links.controller;
 
-import dan.hw.short_links.configuration.AppProperties;
 import dan.hw.short_links.exception.ExistingLinkException;
+import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
 import dan.hw.short_links.model.LinkResponse;
 import dan.hw.short_links.service.LinksService;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/")
@@ -23,7 +22,6 @@ public class LinksController {
 
     private final LinksService linksService;
 
-    private final AppProperties appProperties;
 
     @GetMapping("generate")
     public String generatePage() {
@@ -37,15 +35,11 @@ public class LinksController {
             @RequestParam Long remainder,
             @RequestParam String origLink,
             Model model) {
-        if (toDate == null) {
-            ChronoUnit temporalUnit;
-            LocalDateTime updatedToDate = LocalDateTime.now().plus(appProperties.getAmountToAdd(), ChronoUnit.DAYS);
-        }
         LinkRequest linkModel = new LinkRequest(userName, origLink, toDate, remainder);
         try {
             String shortLink = linksService.generateShortLink(linkModel);
             model.addAttribute("shortLink", shortLink);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | IncorrectDateException e) {
             model.addAttribute("shortLink", e.getMessage());
         } catch (ExistingLinkException e) {
             model.addAttribute("shortLink", "ошибка преоразования ссылки");
@@ -70,4 +64,5 @@ public class LinksController {
 
         return "get-link";
     }
+
 }

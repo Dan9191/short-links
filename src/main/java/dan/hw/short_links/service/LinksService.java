@@ -1,8 +1,10 @@
 package dan.hw.short_links.service;
 
+import dan.hw.short_links.configuration.AppProperties;
 import dan.hw.short_links.entity.Links;
 import dan.hw.short_links.entity.User;
 import dan.hw.short_links.exception.ExistingLinkException;
+import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
 import dan.hw.short_links.model.LinkResponse;
 import dan.hw.short_links.repository.LinksRepository;
@@ -16,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
@@ -26,9 +29,11 @@ public class LinksService {
 
     private final LinksRepository linksRepository;
 
+    private final AppProperties appProperties;
+
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm";
 
-    public String generateShortLink(LinkRequest model) throws NoSuchAlgorithmException, ExistingLinkException {
+    public String generateShortLink(LinkRequest model) throws NoSuchAlgorithmException, ExistingLinkException, IncorrectDateException {
         String userName = model.getUserName();
         String origLink = model.getOrigLink();
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -46,12 +51,20 @@ public class LinksService {
             throw new ExistingLinkException(userName, origLink);
         }
 
+        LocalDateTime updatedToDate;
+        if (model.getToDate() == null) {
+            ChronoUnit chronoUnit = ChronoUnit.valueOf(appProperties.getUnit());
+            updatedToDate = LocalDateTime.now().plus(appProperties.getAmountToAdd(), chronoUnit);
+        } else {
+            updatedToDate = parseAndValidateDate(model.getToDate());
+        }
+
         Links link = new Links();
         link.setUser(user);
         link.setOrigLink(origLink);
         link.setShortLink(shortLink);
         link.setRemainder(model.getRemainder());
-        link.setToDate(parseAndValidateDate(model.getToDate()));
+        link.setToDate(updatedToDate);
         linksRepository.save(link);
 
         return shortLink;
@@ -71,19 +84,19 @@ public class LinksService {
         return "sdfsdf";
     }
 
-    public static LocalDateTime parseAndValidateDate(String dateStr) {
+    public static LocalDateTime parseAndValidateDate(String dateStr) throws IncorrectDateException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         LocalDateTime parsedDate;
         try {
             // Преобразование строки в LocalDateTime
             parsedDate = LocalDateTime.parse(dateStr, formatter);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Неверный формат даты: " + dateStr);
+            throw new IncorrectDateException("Неверный формат даты: " + dateStr);
         }
 
         // Проверка, что дата больше текущей
         if (parsedDate.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Дата должна быть больше текущей.");
+            throw new IncorrectDateException("Дата должна быть больше текущей.");
         }
 
         return parsedDate;
