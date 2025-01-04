@@ -52,12 +52,18 @@ public class LinkService {
             throw new ExistingLinkException(linkMasterName, origLink);
         }
 
+        // Сравнивается дата, указанная пользователем и дата, сгенерированная согласно дефолтным настройкам.
+        // Из полученных дат выбирается наименьшая
         LocalDateTime updatedToDate;
+        ChronoUnit chronoUnit = ChronoUnit.valueOf(appProperties.getUnit());
+        LocalDateTime automaticallyUpdatedToDate = LocalDateTime.now().plus(appProperties.getAmountToAdd(), chronoUnit);
         if (model.getToDate() == null || model.getToDate().equals("")) {
-            ChronoUnit chronoUnit = ChronoUnit.valueOf(appProperties.getUnit());
-            updatedToDate = LocalDateTime.now().plus(appProperties.getAmountToAdd(), chronoUnit);
+            updatedToDate = automaticallyUpdatedToDate;
         } else {
             updatedToDate = parseAndValidateDate(model.getToDate());
+            if (updatedToDate.isAfter(automaticallyUpdatedToDate)) {
+                updatedToDate = automaticallyUpdatedToDate;
+            }
         }
 
         Link link = new Link();
@@ -106,7 +112,29 @@ public class LinkService {
         return link.getOrigLink();
     }
 
-    public static LocalDateTime parseAndValidateDate(String dateStr) throws IncorrectDateException {
+    @Transactional
+    public String editLink(LinkResponse linkResponse) {
+        List<Link> existingLink =
+                linkRepository.findAllByUserAndShortLink(linkResponse.getId(), linkResponse.getShortLink());
+        if (existingLink.isEmpty()) {
+            return "Не найденно ни одной ссылки";
+        }
+        List<Link> activeLinks = existingLink.stream()
+                .filter(link -> link.getRemainder() > 0)
+                .filter(link -> link.getToDate().isAfter(LocalDateTime.now()))
+                .toList();
+        if (activeLinks.isEmpty()) {
+            return "Найденные ссылки просрочены";
+        }
+
+        Link link = activeLinks.get(0);
+        long remainder = link.getRemainder();
+        link.setRemainder(remainder - 1);
+        linkRepository.save(link);
+        return link.getOrigLink();
+    }
+
+    private LocalDateTime parseAndValidateDate(String dateStr) throws IncorrectDateException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         LocalDateTime parsedDate;
         try {
@@ -120,4 +148,6 @@ public class LinkService {
 
         return parsedDate;
     }
+
+
 }

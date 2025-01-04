@@ -65,4 +65,24 @@ public class LinksController {
         return "get-link";
     }
 
+    @GetMapping("edit-link")
+    public String editLinkPage() {
+        return "edit-link";
+    }
+
+    @PostMapping("edit-link")
+    public String editLink(
+            @RequestParam String linkMasterId,
+            @RequestParam String toDate,
+            @RequestParam Long remainder,
+            @RequestParam String origLink,
+            Model model) {
+
+//        LinkResponse linkResponse = new LinkResponse(linkMasterId, shortLink);
+//        String origLink = linkService.getOrigLink(linkResponse);
+        model.addAttribute("origLink", origLink);
+
+        return "get-link";
+    }
+
 }
