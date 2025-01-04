@@ -39,7 +39,7 @@ public class LinksService {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(origLink.getBytes(StandardCharsets.UTF_8));
         String shortLink =  bytesToHex(hashBytes).substring(0, 8);
-        User user = userRepository.findByName(userName)
+        User user = userRepository.byName(userName)
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setName(userName);
@@ -88,13 +88,10 @@ public class LinksService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         LocalDateTime parsedDate;
         try {
-            // Преобразование строки в LocalDateTime
             parsedDate = LocalDateTime.parse(dateStr, formatter);
         } catch (DateTimeParseException e) {
             throw new IncorrectDateException("Неверный формат даты: " + dateStr);
         }
-
-        // Проверка, что дата больше текущей
         if (parsedDate.isBefore(LocalDateTime.now())) {
             throw new IncorrectDateException("Дата должна быть больше текущей.");
         }

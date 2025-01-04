@@ -42,7 +42,7 @@ public class LinksController {
         } catch (NoSuchAlgorithmException | IncorrectDateException e) {
             model.addAttribute("shortLink", e.getMessage());
         } catch (ExistingLinkException e) {
-            model.addAttribute("shortLink", "ошибка преоразования ссылки");
+            model.addAttribute("shortLink", "ошибка преобразования ссылки");
         }
         return "generate";
     }
