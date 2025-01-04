@@ -42,4 +42,10 @@ public interface LinksRepository extends JpaRepository<Links, Long> {
             WHERE l.active = true AND (l.remainder <= 0 OR l.toDate <= CURRENT_TIMESTAMP)
             """)
     int deactivateExpiredLinks();
+
+    @Query("""
+        SELECT l FROM Links l
+        WHERE l.active = true AND (l.remainder <= 0 OR l.toDate <= CURRENT_TIMESTAMP)
+    """)
+    List<Links> findForDeactivate();
 }
