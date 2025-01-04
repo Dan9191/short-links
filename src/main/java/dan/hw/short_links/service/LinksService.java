@@ -83,6 +83,7 @@ public class LinksService {
         return hexString.toString();
     }
 
+    @Transactional
     public String getOrigLink(LinkResponse linkResponse) {
         List<Links> existingLink =
                 linksRepository.findAllByUserAndShortLink(linkResponse.getUserName(), linkResponse.getShortLink());
@@ -93,14 +94,14 @@ public class LinksService {
                 .filter(links -> links.getRemainder() > 0)
                 .filter(links -> links.getToDate().isAfter(LocalDateTime.now()))
                 .toList();
-        if (existingLink.isEmpty()) {
+        if (activeLinks.isEmpty()) {
             return "Найденные ссылки просрочены";
         }
 
-        Links link = activeLinks.getFirst();
+        Links link = activeLinks.get(0);
         long remainder = link.getRemainder();
         link.setRemainder(remainder - 1);
-
+        linksRepository.save(link);
         return link.getOrigLink();
     }
 
