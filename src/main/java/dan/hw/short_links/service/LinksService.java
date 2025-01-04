@@ -1,8 +1,8 @@
 package dan.hw.short_links.service;
 
 import dan.hw.short_links.configuration.AppProperties;
-import dan.hw.short_links.entity.Links;
 import dan.hw.short_links.entity.LinkMaster;
+import dan.hw.short_links.entity.Links;
 import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -83,9 +84,24 @@ public class LinksService {
     }
 
     public String getOrigLink(LinkResponse linkResponse) {
-        Optional<Links> existingLink =
-                linksRepository.findActiveLinkByUserAndShortLink(linkResponse.getUserName(), linkResponse.getShortLink());
-        return "sdfsdf";
+        List<Links> existingLink =
+                linksRepository.findAllByUserAndShortLink(linkResponse.getUserName(), linkResponse.getShortLink());
+        if (existingLink.isEmpty()) {
+            return "Не найденно ни одной ссылки";
+        }
+        List<Links> activeLinks = existingLink.stream()
+                .filter(links -> links.getRemainder() > 0)
+                .filter(links -> links.getToDate().isAfter(LocalDateTime.now()))
+                .toList();
+        if (existingLink.isEmpty()) {
+            return "Найденные ссылки просрочены";
+        }
+
+        Links link = activeLinks.getFirst();
+        long remainder = link.getRemainder();
+        link.setRemainder(remainder - 1);
+
+        return link.getOrigLink();
     }
 
     public static LocalDateTime parseAndValidateDate(String dateStr) throws IncorrectDateException {

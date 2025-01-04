@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -28,10 +29,8 @@ public interface LinksRepository extends JpaRepository<Links, Long> {
         JOIN l.linkMaster lm
         WHERE lm.name = :userName
           AND l.shortLink = :shortLink
-          AND l.remainder > 0
-          AND l.toDate > CURRENT_TIMESTAMP
     """)
-    Optional<Links> findActiveLinkByUserAndShortLink(
+    List<Links> findAllByUserAndShortLink(
             @Param("userName") String userName,
             @Param("shortLink") String shortLink);
 }
