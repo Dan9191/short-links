@@ -1,19 +1,13 @@
 package dan.hw.short_links.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "links")
+@Data
 public class Links {
 
     @Id
@@ -21,8 +15,8 @@ public class Links {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "link_master_id", nullable = false)
+    private LinkMaster linkMaster;
 
     @Column(name = "orig_link", nullable = false)
     private String origLink;
@@ -38,61 +32,4 @@ public class Links {
 
     @Column(name = "remainder")
     private Long remainder;
-
-    // Getters and setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getOrigLink() {
-        return origLink;
-    }
-
-    public void setOrigLink(String origLink) {
-        this.origLink = origLink;
-    }
-
-    public String getShortLink() {
-        return shortLink;
-    }
-
-    public void setShortLink(String shortLink) {
-        this.shortLink = shortLink;
-    }
-
-    public LocalDateTime getFromDate() {
-        return fromDate;
-    }
-
-    public void setFromDate(LocalDateTime fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public LocalDateTime getToDate() {
-        return toDate;
-    }
-
-    public void setToDate(LocalDateTime toDate) {
-        this.toDate = toDate;
-    }
-
-    public Long getRemainder() {
-        return remainder;
-    }
-
-    public void setRemainder(Long remainder) {
-        this.remainder = remainder;
-    }
 }

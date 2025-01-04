@@ -13,13 +13,25 @@ public interface LinksRepository extends JpaRepository<Links, Long> {
 
     @Query("""
         SELECT l FROM Links l
-        JOIN l.user u
-        WHERE u.name = :userName
+        JOIN l.linkMaster lm
+        WHERE lm.name = :userName
           AND l.origLink = :origLink
           AND l.remainder > 0
-          AND l.fromDate < CURRENT_TIMESTAMP
+          AND l.toDate > CURRENT_TIMESTAMP
     """)
     Optional<Links> findActiveLinkByUserAndOrigLink(
             @Param("userName") String userName,
             @Param("origLink") String origLink);
+
+    @Query("""
+        SELECT l FROM Links l
+        JOIN l.linkMaster lm
+        WHERE lm.name = :userName
+          AND l.shortLink = :shortLink
+          AND l.remainder > 0
+          AND l.toDate > CURRENT_TIMESTAMP
+    """)
+    Optional<Links> findActiveLinkByUserAndShortLink(
+            @Param("userName") String userName,
+            @Param("shortLink") String shortLink);
 }
