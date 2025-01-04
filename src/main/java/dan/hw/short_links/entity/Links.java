@@ -32,4 +32,7 @@ public class Links {
 
     @Column(name = "remainder")
     private Long remainder;
+
+    @Column(name = "active")
+    private boolean active;
 }

@@ -2,6 +2,7 @@ package dan.hw.short_links.repository;
 
 import dan.hw.short_links.entity.Links;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -33,4 +34,12 @@ public interface LinksRepository extends JpaRepository<Links, Long> {
     List<Links> findAllByUserAndShortLink(
             @Param("userName") String userName,
             @Param("shortLink") String shortLink);
+
+    @Modifying
+    @Query("""
+            UPDATE Links l
+            SET l.active = false
+            WHERE l.active = true AND (l.remainder <= 0 OR l.toDate <= CURRENT_TIMESTAMP)
+            """)
+    int deactivateExpiredLinks();
 }

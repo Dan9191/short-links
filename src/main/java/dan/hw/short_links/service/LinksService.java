@@ -66,6 +66,7 @@ public class LinksService {
         link.setShortLink(shortLink);
         link.setRemainder(model.getRemainder());
         link.setToDate(updatedToDate);
+        link.setActive(true);
         linksRepository.save(link);
 
         return shortLink;

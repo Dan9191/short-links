@@ -10,5 +10,6 @@ CREATE TABLE links (
                        short_link VARCHAR NOT NULL,
                        from_date TIMESTAMP DEFAULT NOW(),
                        to_date TIMESTAMP,
-                       remainder BIGINT
+                       remainder BIGINT,
+                       active BOOLEAN
 );
