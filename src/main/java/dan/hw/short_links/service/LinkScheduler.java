@@ -1,7 +1,7 @@
 package dan.hw.short_links.service;
 
-import dan.hw.short_links.entity.Links;
-import dan.hw.short_links.repository.LinksRepository;
+import dan.hw.short_links.entity.Link;
+import dan.hw.short_links.repository.LinkRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class LinksScheduler {
+public class LinkScheduler {
 
-    private final LinksRepository linksRepository;
+    private final LinkRepository linkRepository;
 
     @PostConstruct
     public void startScheduler() {
@@ -29,15 +29,15 @@ public class LinksScheduler {
     @Transactional
     public void deactivateLinks() {
         try {
-            List<Links> links = linksRepository.findForDeactivate();
+            List<Link> links = linkRepository.findForDeactivate();
             links.stream().peek(link -> link.setActive(false)).forEach(this::sendNotifications);
-            linksRepository.saveAll(links);
+            linkRepository.saveAll(links);
         } catch (Exception e) {
             log.error("Ошибка при выполнении deactivateLinks: ", e);
         }
     }
 
-    private void sendNotifications(Links link) {
+    private void sendNotifications(Link link) {
                 //метод для отправки предупреждения
         log.info("link deactivated {}", link);
     }

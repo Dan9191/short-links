@@ -1,14 +1,14 @@
 package dan.hw.short_links.service;
 
 import dan.hw.short_links.configuration.AppProperties;
+import dan.hw.short_links.entity.Link;
 import dan.hw.short_links.entity.LinkMaster;
-import dan.hw.short_links.entity.Links;
 import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
 import dan.hw.short_links.model.LinkResponse;
 import dan.hw.short_links.repository.LinkMasterRepository;
-import dan.hw.short_links.repository.LinksRepository;
+import dan.hw.short_links.repository.LinkRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,11 +25,11 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class LinksService {
+public class LinkService {
 
     private final LinkMasterRepository linkMasterRepository;
 
-    private final LinksRepository linksRepository;
+    private final LinkRepository linkRepository;
 
     private final AppProperties appProperties;
 
@@ -46,7 +46,7 @@ public class LinksService {
                     newLinkMaster.setName(linkMasterName);
                     return linkMasterRepository.save(newLinkMaster);
                 });
-        Optional<Links> existingLink = linksRepository.findActiveLinkByUserAndOrigLink(linkMasterName, origLink);
+        Optional<Link> existingLink = linkRepository.findActiveLinkByUserAndOrigLink(linkMasterName, origLink);
 
         if (existingLink.isPresent()) {
             throw new ExistingLinkException(linkMasterName, origLink);
@@ -60,14 +60,14 @@ public class LinksService {
             updatedToDate = parseAndValidateDate(model.getToDate());
         }
 
-        Links link = new Links();
+        Link link = new Link();
         link.setLinkMaster(user);
         link.setOrigLink(origLink);
         link.setShortLink(shortLink);
         link.setRemainder(model.getRemainder());
         link.setToDate(updatedToDate);
         link.setActive(true);
-        linksRepository.save(link);
+        linkRepository.save(link);
 
         return shortLink;
     }
@@ -86,23 +86,23 @@ public class LinksService {
 
     @Transactional
     public String getOrigLink(LinkResponse linkResponse) {
-        List<Links> existingLink =
-                linksRepository.findAllByUserAndShortLink(linkResponse.getUserName(), linkResponse.getShortLink());
+        List<Link> existingLink =
+                linkRepository.findAllByUserAndShortLink(linkResponse.getId(), linkResponse.getShortLink());
         if (existingLink.isEmpty()) {
             return "Не найденно ни одной ссылки";
         }
-        List<Links> activeLinks = existingLink.stream()
-                .filter(links -> links.getRemainder() > 0)
-                .filter(links -> links.getToDate().isAfter(LocalDateTime.now()))
+        List<Link> activeLinks = existingLink.stream()
+                .filter(link -> link.getRemainder() > 0)
+                .filter(link -> link.getToDate().isAfter(LocalDateTime.now()))
                 .toList();
         if (activeLinks.isEmpty()) {
             return "Найденные ссылки просрочены";
         }
 
-        Links link = activeLinks.get(0);
+        Link link = activeLinks.get(0);
         long remainder = link.getRemainder();
         link.setRemainder(remainder - 1);
-        linksRepository.save(link);
+        linkRepository.save(link);
         return link.getOrigLink();
     }
 

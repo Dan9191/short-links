@@ -2,8 +2,7 @@ package dan.hw.short_links.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.util.UUID;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "link_master")
@@ -11,8 +10,10 @@ import java.util.UUID;
 public class LinkMaster {
 
     @Id
-    @GeneratedValue(generator = "uuid")
-    private UUID id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
+    private String id;
 
     @Column
     private String name;

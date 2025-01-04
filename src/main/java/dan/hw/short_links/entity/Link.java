@@ -2,13 +2,14 @@ package dan.hw.short_links.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "links")
+@Table(name = "short_link")
 @Data
-public class Links {
+public class Link {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

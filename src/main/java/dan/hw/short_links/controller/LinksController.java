@@ -4,7 +4,7 @@ import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
 import dan.hw.short_links.model.LinkResponse;
-import dan.hw.short_links.service.LinksService;
+import dan.hw.short_links.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
 @RequiredArgsConstructor
 public class LinksController {
 
-    private final LinksService linksService;
+    private final LinkService linkService;
 
 
     @GetMapping("generate")
@@ -37,7 +37,7 @@ public class LinksController {
             Model model) {
         LinkRequest linkModel = new LinkRequest(userName, origLink, toDate, remainder);
         try {
-            String shortLink = linksService.generateShortLink(linkModel);
+            String shortLink = linkService.generateShortLink(linkModel);
             model.addAttribute("shortLink", shortLink);
         } catch (NoSuchAlgorithmException | IncorrectDateException e) {
             model.addAttribute("shortLink", e.getMessage());
@@ -54,12 +54,12 @@ public class LinksController {
 
     @PostMapping("get-link")
     public String getLink(
-            @RequestParam String userName,
+            @RequestParam String linkMasterId,
             @RequestParam String shortLink,
             Model model) {
 
-        LinkResponse linkResponse = new LinkResponse(userName, shortLink);
-        String origLink = linksService.getOrigLink(linkResponse);
+        LinkResponse linkResponse = new LinkResponse(linkMasterId, shortLink);
+        String origLink = linkService.getOrigLink(linkResponse);
         model.addAttribute("origLink", origLink);
 
         return "get-link";
