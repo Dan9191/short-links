@@ -16,4 +16,4 @@ jobs:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Test SSH connection
-        run: ssh -o StrictHostKeyChecking=no root@45.9.40.117 "echo 'All its ok'"
+        run: ssh -o StrictHostKeyChecking=no root@212.67.11.228 "echo 'All its ok'"
