@@ -121,7 +121,7 @@ jobs:
       # Убиваем старый процесс с таким же работающим именем
       - name: kill old app
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} 'pkill -f short-links-0.0.1-SNAPSHOT.jar'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} 'pkill -f short-links-0.0.1-SNAPSHOT.jar || true'
 
       # Копируем файл, который запустит приложение, в папку short-links на удаленном сервере
       - name: Copy files to remote server
