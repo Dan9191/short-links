@@ -8,19 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Репозиторий для работы со ссылками.
+ */
 @Repository
 public interface LinkRepository extends JpaRepository<Link, Long> {
-
-    @Query("""
-        SELECT l FROM Link l
-        JOIN l.linkMaster lm
-        WHERE lm.id = :linkMasterId
-          AND l.shortLink = :shortLink
-          AND l.active is true
-    """)
-    List<Link> findActiveLinkByUserAndShortLink(
-            @Param("linkMasterId") String linkMasterId,
-            @Param("shortLink") String shortLink);
 
     @Query("""
         SELECT l FROM Link l

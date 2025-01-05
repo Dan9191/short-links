@@ -1,6 +1,9 @@
 package dan.hw.short_links.controller;
 
-import dan.hw.short_links.model.LinkResponse;
+import dan.hw.short_links.exception.NotActiveLinkException;
+import dan.hw.short_links.exception.NotExistingLinkException;
+import dan.hw.short_links.model.LinkGet;
+import dan.hw.short_links.model.LinkGetResponse;
 import dan.hw.short_links.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -19,13 +22,21 @@ public class GetLinkController {
 
     @GetMapping
     public String getLinkPage(Model model) {
-        model.addAttribute("linkResponse", new LinkResponse("", ""));
+        model.addAttribute("linkGet", new LinkGet("", ""));
         return "get-link";
     }
 
     @PostMapping
-    public String getLink(@ModelAttribute LinkResponse linkResponse, Model model) {
-        model.addAttribute("origLink", linkService.getOrigLink(linkResponse));
+    public String getLink(@ModelAttribute LinkGet linkGet, Model model) {
+        try {
+            LinkGetResponse result = linkService.getOrigLink(linkGet);
+            model.addAttribute("origLink", result.getOrigLink());
+            if (result.getMessage() != null && !result.getMessage().equals("")) {
+                model.addAttribute("message", result.getMessage());
+            }
+        } catch (NotExistingLinkException | NotActiveLinkException e) {
+            model.addAttribute("message", e.getMessage());
+        }
         return "get-link";
     }
 

@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
+/**
+ * Сущность для хранения пользователя.
+ */
 @Entity
 @Table(name = "link_master")
 @Data

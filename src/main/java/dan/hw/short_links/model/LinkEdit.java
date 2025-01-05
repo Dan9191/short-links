@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Модель для передачи данных при редактировании ссылки.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

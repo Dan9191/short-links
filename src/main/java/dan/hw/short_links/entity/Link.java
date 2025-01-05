@@ -6,6 +6,9 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 
+/**
+ * Сущность для хранения ссылки.
+ */
 @Entity
 @Table(name = "short_link")
 @Data

@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Репозиторий для работы с пользователями.
+ */
 @Repository
 public interface LinkMasterRepository extends JpaRepository<LinkMaster, UUID> {
 

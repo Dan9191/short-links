@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +27,9 @@ public class LinkScheduler {
         scheduler.scheduleAtFixedRate(this::deactivateLinks, 0, 1, TimeUnit.MINUTES);
     }
 
+    /**
+     * Метод для перевода ссылок в неактивный режим.
+     */
     @Transactional
     public void deactivateLinks() {
         try {

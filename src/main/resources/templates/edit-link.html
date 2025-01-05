@@ -52,15 +52,9 @@
         <button type="submit" name="action" value="edit" class="btn btn-primary btn-sm">Редактировать</button>
         <button type="submit" name="action" value="fill" class="btn btn-secondary btn-sm">Заполнить</button>
     </form>
-    <div class="mt-3" th:if="${shortLink != null}">
-        <p><small>UUID пользователя: </small></p>
-        <pre th:text="${linkMasterId}"></pre>
-        <p><small>Отредактированная ссылка: </small></p>
-        <pre th:text="${toDate}"></pre>
-        <p><small>Количество применений: </small></p>
-        <pre th:text="${remainder}"></pre>
-        <p><small>Короткая ссылка: </small></p>
-        <pre th:text="${remainder}"></pre>
+    <div class="mt-3" th:if="${message != null}">
+        <p><small> Результат выполнения: </small></p>
+        <pre th:text="${message}"></pre>
     </div>
 </div>
 </body>

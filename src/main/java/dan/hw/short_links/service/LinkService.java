@@ -4,14 +4,17 @@ import dan.hw.short_links.configuration.AppProperties;
 import dan.hw.short_links.entity.Link;
 import dan.hw.short_links.entity.LinkMaster;
 import dan.hw.short_links.exception.IncorrectDateException;
+import dan.hw.short_links.exception.NotActiveLinkException;
 import dan.hw.short_links.exception.NotExistingLinkException;
 import dan.hw.short_links.model.LinkEdit;
-import dan.hw.short_links.model.LinkRequest;
-import dan.hw.short_links.model.LinkResponse;
+import dan.hw.short_links.model.LinkGenerate;
+import dan.hw.short_links.model.LinkGet;
+import dan.hw.short_links.model.LinkGetResponse;
 import dan.hw.short_links.repository.LinkMasterRepository;
 import dan.hw.short_links.repository.LinkRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -23,6 +26,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LinkService {
@@ -35,8 +39,16 @@ public class LinkService {
 
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm";
 
+    /**
+     * Генерация короткой ссылки.
+     *
+     * @param model Данные для генерации ссылки.
+     * @return Короткая ссылка + uuid пользователя.
+     * @throws NoSuchAlgorithmException ошибка при вычислении хэша.
+     * @throws IncorrectDateException некорректно переданная дата.
+     */
     @Transactional
-    public LinkResponse generateShortLink(LinkRequest model) throws NoSuchAlgorithmException, IncorrectDateException {
+    public LinkGet generateShortLink(LinkGenerate model) throws NoSuchAlgorithmException, IncorrectDateException {
         String linkMasterName = model.getUserName();
         String origLink = model.getOrigLink();
         String shortLink =
@@ -62,16 +74,22 @@ public class LinkService {
             }
         }
 
+
         Link link = new Link();
         link.setLinkMaster(user);
         link.setOrigLink(origLink);
         link.setShortLink(shortLink);
-        link.setRemainder(model.getRemainder());
+        // согласно ТЗ, из введенных значений количества переходов выбирается наибольшее
+        if (model.getRemainder() >= appProperties.getRemainder()) {
+            link.setRemainder(model.getRemainder());
+        } else {
+            link.setRemainder(appProperties.getRemainder());
+        }
         link.setToDate(updatedToDate);
         link.setActive(true);
         linkRepository.save(link);
 
-        return new LinkResponse(user.getId(), shortLink);
+        return new LinkGet(user.getId(), shortLink);
     }
 
     private String stringToHex(String string) throws NoSuchAlgorithmException {
@@ -86,38 +104,53 @@ public class LinkService {
         return hexString.toString();
     }
 
+    /**
+     * Получение оригинальной ссылки.
+     *
+     * @param linkGet Uuid пользователя + короткая ссылка.
+     * @return оригинальная ссылка
+     * @throws NotExistingLinkException такой ссылки нет в БД.
+     * @throws NotActiveLinkException найденная ссылка не активна.
+     */
     @Transactional
-    public String getOrigLink(LinkResponse linkResponse) {
+    public LinkGetResponse getOrigLink(LinkGet linkGet) throws NotExistingLinkException, NotActiveLinkException {
         List<Link> existingLink =
-                linkRepository.findActiveLinkByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+                linkRepository.findAllByUserAndShortLink(linkGet.getLinkMasterId(), linkGet.getShortLink());
         if (existingLink.isEmpty()) {
-            return "Не найдено ни одной ссылки";
+            throw new NotExistingLinkException(linkGet.getLinkMasterId(), linkGet.getShortLink());
         }
         List<Link> activeLinks = existingLink.stream()
                 .filter(link -> link.getRemainder() > 0)
                 .filter(link -> link.getToDate().isAfter(LocalDateTime.now()))
+                .filter(Link::isActive)
                 .toList();
         if (activeLinks.isEmpty()) {
-            return "Найденные ссылки просрочены";
+            throw new NotActiveLinkException(linkGet.getLinkMasterId(), linkGet.getShortLink());
         }
 
         Link link = activeLinks.get(0);
-        long remainder = link.getRemainder();
-        link.setRemainder(remainder - 1);
+        long remainder = link.getRemainder() - 1;
+        link.setRemainder(remainder);
+        LinkGetResponse result;
+        if (remainder == 0) {
+            link.setActive(false);
+            result = new LinkGetResponse("Текущее количество действий ссылки  0", link.getOrigLink());
+        } else {
+            result = new LinkGetResponse(null, link.getOrigLink());
+        }
         linkRepository.save(link);
-        return link.getOrigLink();
+        return result;
     }
 
     /**
      * Метод для изменения существующей ссылки.
      *
-     * @param linkEdit
-     * @return
-     * @throws NotExistingLinkException
-     * @throws IncorrectDateException
+     * @param linkEdit Данные для изменения ссылки.
+     * @throws NotExistingLinkException такой ссылки нет.
+     * @throws IncorrectDateException передана некорректная дата.
      */
     @Transactional
-    public String editLink(LinkEdit linkEdit) throws NotExistingLinkException, IncorrectDateException {
+    public void editLink(LinkEdit linkEdit) throws NotExistingLinkException, IncorrectDateException {
         List<Link> existingLink =
                 linkRepository.findAllByUserAndShortLink(linkEdit.getLinkMasterId(), linkEdit.getShortLink());
         if (existingLink.isEmpty()) {
@@ -132,15 +165,21 @@ public class LinkService {
         link.setRemainder(linkEdit.getRemainder());
         link.setActive(linkEdit.getStatusStub().isStatus());
         linkRepository.save(link);
-        return link.getOrigLink();
     }
 
+    /**
+     * Поиск ссылки, для внесения изменений
+     *
+     * @param linkGet Uuid пользователя + короткая ссылка.
+     * @return Данные о ссылке
+     * @throws NotExistingLinkException указанная ссылка не найдена
+     */
     @Transactional
-    public LinkEdit findLink(LinkResponse linkResponse) throws NotExistingLinkException {
+    public LinkEdit findLink(LinkGet linkGet) throws NotExistingLinkException {
         List<Link> existingLink =
-                linkRepository.findAllByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+                linkRepository.findAllByUserAndShortLink(linkGet.getLinkMasterId(), linkGet.getShortLink());
         if (existingLink.isEmpty()) {
-            throw new NotExistingLinkException(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+            throw new NotExistingLinkException(linkGet.getLinkMasterId(), linkGet.getShortLink());
         }
         Link link = existingLink.get(0);
         return new LinkEdit(link);

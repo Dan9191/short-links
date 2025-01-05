@@ -3,11 +3,12 @@ package dan.hw.short_links.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
+/**
+ * Модель для передачи данных при генерации ссылки.
+ */
 @Data
 @AllArgsConstructor
-public class LinkRequest {
+public class LinkGenerate {
 
     private String userName;
     private String origLink;

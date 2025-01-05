@@ -1,5 +1,8 @@
 package dan.hw.short_links.exception;
 
+/**
+ * Ошибка поиска ссылок.
+ */
 public class NotExistingLinkException extends Exception {
 
     public NotExistingLinkException(String userName, String orinLink) {
