@@ -121,14 +121,14 @@ jobs:
       # Убиваем старый процесс с таким же работающим именем
       - name: kill old app
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} 'pkill -f short-links-0.0.1-SNAPSHOT.jar || true'
+          ssh -o StrictHostKeyChecking=no root@212.67.11.228 'pkill -f short-links-0.0.1-SNAPSHOT.jar || true'
 
       # Копируем файл, который запустит приложение, в папку short-links на удаленном сервере
       - name: Copy files to remote server
         run: |
-          scp -o StrictHostKeyChecking=no build/libs/short-links-0.0.1-SNAPSHOT.jar ${{ secrets.USER }}@${{ secrets.HOST }}:short-links/
+          scp -o StrictHostKeyChecking=no build/libs/short-links-0.0.1-SNAPSHOT.jar root@212.67.11.228:short-links/
 
       # Запускаем новый файл
       - name: run new app
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} 'nohup java -jar short-links/short-links-0.0.1-SNAPSHOT.jar > app.log 2>&1 &'
+          ssh -o StrictHostKeyChecking=no root@212.67.11.228 'nohup java -jar short-links/short-links-0.0.1-SNAPSHOT.jar > app.log 2>&1 &'
