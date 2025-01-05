@@ -1,0 +1,19 @@
+name: Test SSH Connection
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-ssh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Test SSH connection
+        run: ssh -o StrictHostKeyChecking=no root@45.9.40.117 "echo 'All its ok'"
