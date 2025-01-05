@@ -1,9 +1,9 @@
 package dan.hw.short_links.controller;
 
 import dan.hw.short_links.configuration.AppProperties;
-import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
+import dan.hw.short_links.model.LinkResponse;
 import dan.hw.short_links.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -37,12 +37,11 @@ public class GenerateController {
     public String generateString(
             @ModelAttribute LinkRequest linkRequest, Model model) {
         try {
-            String shortLink = linkService.generateShortLink(linkRequest);
-            model.addAttribute("shortLink", shortLink);
+            LinkResponse linkResponse = linkService.generateShortLink(linkRequest);
+            model.addAttribute("linkMasterId", linkResponse.getLinkMasterId());
+            model.addAttribute("shortLink", linkResponse.getShortLink());
         } catch (NoSuchAlgorithmException | IncorrectDateException e) {
-            model.addAttribute("shortLink", e.getMessage());
-        } catch (ExistingLinkException e) {
-            model.addAttribute("shortLink", "ошибка преобразования ссылки");
+            model.addAttribute("errorMessage", e.getMessage());
         }
         return "generate";
     }

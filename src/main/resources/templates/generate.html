@@ -50,8 +50,18 @@
     </form>
     <div class="mt-3" th:if="${shortLink != null}">
         <div class="row">
+            <p><small>UUID Пользователя: </small></p>
+            <pre th:text="${linkMasterId}"></pre>
+        </div>
+        <div class="row">
             <p><small>Сгенерированная ссылка: </small></p>
             <pre th:text="${shortLink}"></pre>
+        </div>
+    </div>
+    <div class="mt-3" th:if="${errorMessage != null}">
+        <div class="row">
+            <p><small>Ошибка генерации ссылки: </small></p>
+            <pre th:text="${errorMessage}"></pre>
         </div>
     </div>
 </div>

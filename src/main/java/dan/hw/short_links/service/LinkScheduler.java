@@ -29,6 +29,7 @@ public class LinkScheduler {
     @Transactional
     public void deactivateLinks() {
         try {
+            log.info("Start deactivating links");
             List<Link> links = linkRepository.findForDeactivate();
             links.stream().peek(link -> link.setActive(false)).forEach(this::sendNotifications);
             linkRepository.saveAll(links);

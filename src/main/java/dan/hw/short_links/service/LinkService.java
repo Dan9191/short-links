@@ -3,8 +3,9 @@ package dan.hw.short_links.service;
 import dan.hw.short_links.configuration.AppProperties;
 import dan.hw.short_links.entity.Link;
 import dan.hw.short_links.entity.LinkMaster;
-import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
+import dan.hw.short_links.exception.NotExistingLinkException;
+import dan.hw.short_links.model.LinkEdit;
 import dan.hw.short_links.model.LinkRequest;
 import dan.hw.short_links.model.LinkResponse;
 import dan.hw.short_links.repository.LinkMasterRepository;
@@ -21,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,21 +36,17 @@ public class LinkService {
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm";
 
     @Transactional
-    public String generateShortLink(LinkRequest model) throws NoSuchAlgorithmException, ExistingLinkException, IncorrectDateException {
+    public LinkResponse generateShortLink(LinkRequest model) throws NoSuchAlgorithmException, IncorrectDateException {
         String linkMasterName = model.getUserName();
         String origLink = model.getOrigLink();
-        String shortLink =  "clck.ru/" + stringToHex(origLink + linkMasterName).substring(0, 8);;
+        String shortLink =
+                "clck.ru/" + stringToHex(origLink + linkMasterName + System.currentTimeMillis()).substring(0, 8);
         LinkMaster user = linkMasterRepository.findByName(linkMasterName)
                 .orElseGet(() -> {
                     LinkMaster newLinkMaster = new LinkMaster();
                     newLinkMaster.setName(linkMasterName);
                     return linkMasterRepository.save(newLinkMaster);
                 });
-        Optional<Link> existingLink = linkRepository.findActiveLinkByUserAndOrigLink(linkMasterName, origLink);
-
-        if (existingLink.isPresent()) {
-            throw new ExistingLinkException(linkMasterName, origLink);
-        }
 
         // Сравнивается дата, указанная пользователем и дата, сгенерированная согласно дефолтным настройкам.
         // Из полученных дат выбирается наименьшая
@@ -75,7 +71,7 @@ public class LinkService {
         link.setActive(true);
         linkRepository.save(link);
 
-        return shortLink;
+        return new LinkResponse(user.getId(), shortLink);
     }
 
     private String stringToHex(String string) throws NoSuchAlgorithmException {
@@ -93,9 +89,9 @@ public class LinkService {
     @Transactional
     public String getOrigLink(LinkResponse linkResponse) {
         List<Link> existingLink =
-                linkRepository.findAllByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+                linkRepository.findActiveLinkByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
         if (existingLink.isEmpty()) {
-            return "Не найденно ни одной ссылки";
+            return "Не найдено ни одной ссылки";
         }
         List<Link> activeLinks = existingLink.stream()
                 .filter(link -> link.getRemainder() > 0)
@@ -112,24 +108,29 @@ public class LinkService {
         return link.getOrigLink();
     }
 
+    /**
+     * Метод для изменения существующей ссылки.
+     *
+     * @param linkEdit
+     * @return
+     * @throws NotExistingLinkException
+     * @throws IncorrectDateException
+     */
     @Transactional
-    public String editLink(LinkResponse linkResponse) {
+    public String editLink(LinkEdit linkEdit) throws NotExistingLinkException, IncorrectDateException {
         List<Link> existingLink =
-                linkRepository.findAllByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+                linkRepository.findAllByUserAndShortLink(linkEdit.getLinkMasterId(), linkEdit.getShortLink());
         if (existingLink.isEmpty()) {
-            return "Не найденно ни одной ссылки";
+            throw new NotExistingLinkException(linkEdit.getLinkMasterId(), linkEdit.getShortLink());
         }
-        List<Link> activeLinks = existingLink.stream()
-                .filter(link -> link.getRemainder() > 0)
-                .filter(link -> link.getToDate().isAfter(LocalDateTime.now()))
-                .toList();
-        if (activeLinks.isEmpty()) {
-            return "Найденные ссылки просрочены";
+        Link link = existingLink.get(0);
+        if (linkEdit.getToDate() != null || !linkEdit.getToDate().equals("")) {
+            LocalDateTime updatedToDate = parseAndValidateDate(linkEdit.getToDate());
+            link.setToDate(updatedToDate);
         }
 
-        Link link = activeLinks.get(0);
-        long remainder = link.getRemainder();
-        link.setRemainder(remainder - 1);
+        link.setRemainder(linkEdit.getRemainder());
+        link.setActive(linkEdit.getStatusStub().isStatus());
         linkRepository.save(link);
         return link.getOrigLink();
     }
@@ -148,6 +149,5 @@ public class LinkService {
 
         return parsedDate;
     }
-
 
 }
