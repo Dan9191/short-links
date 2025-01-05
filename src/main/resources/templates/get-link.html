@@ -48,7 +48,7 @@
     <div class="mt-3" th:if="${origLink != null}">
         <div class="row">
             <p><small>Полученная ссылка: </small></p>
-            <pre th:text="${origLink}">></pre>
+            <a th:href="${origLink}" target="_blank" th:text="${origLink}">оригинальная ссылка</a>
         </div>
     </div>
     <div class="mt-3" th:if="${message != null}">
