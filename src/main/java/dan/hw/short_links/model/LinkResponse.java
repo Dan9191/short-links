@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class LinkResponse {
 
-    private String id;
+    private String linkMasterId;
     private String shortLink;
 }

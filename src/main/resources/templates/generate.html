@@ -37,16 +37,14 @@
             <li><a href="/edit-link" class="nav-link">Редактирование ссылки</a></li>
         </ul>
     </header>
-
-    <form method="post" action="generate" required>
+    <form id="scriptForm" th:action="@{/generate}" th:object="${linkRequest}" method="post" spellcheck="false">
         <div class="form-group mb-1">
-        <label>Имя пользователя: <input class="form-control" type="text" name="userName" required></label><br>
+        <label>Имя пользователя: <input class="form-control" type="text" id="userName" th:field="*{userName}" required></label><br>
         <label>Время действия до:
-            <input class="form-control" type="text" name="toDate" placeholder="yyyy-MM-dd HH:mm">
+            <input class="form-control" type="text" id="toDate" th:field="*{toDate}" placeholder="yyyy-MM-dd HH:mm">
         </label><br>
-        <!--    количество применений сделать опциональным-->
-        <label>Количество применений: <input class="form-control" type="number" name="remainder" required></label><br>
-        <label>Оригинальная ссылка: <input class="form-control" type="text" name="origLink" required></label><br>
+        <label>Количество применений: <input class="form-control" type="number" id="remainder" th:field="*{remainder}" required></label><br>
+        <label>Оригинальная ссылка: <input class="form-control" type="text" id="origLink" th:field="*{origLink}"  required></label><br>
         </div>
         <button class="btn btn-primary btn-sm" type="submit">Сгенерировать</button>
     </form>

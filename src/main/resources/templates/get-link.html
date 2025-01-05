@@ -37,11 +37,10 @@
         </ul>
     </header>
 
-
-    <form method="post" action="get-link">
+    <form id="scriptForm" th:action="@{/get-link}" th:object="${linkResponse}" method="post" spellcheck="false">
         <div class="form-group mb-1">
-        <label>UUID пользователя: <input class="form-control" type="text" name="linkMasterId" required></label><br>
-        <label>Строка: <input class="form-control" type="text" name="shortLink" required></label><br>
+        <label>UUID пользователя: <input class="form-control" type="text" id="linkMasterId" th:field="*{linkMasterId}" required></label><br>
+        <label>Короткая ссылка: <input class="form-control" type="text" id="shortLink" th:field="*{shortLink}" required></label><br>
         </div>
         <button class="btn btn-primary btn-sm" type="submit">Получить ссылку</button>
     </form>

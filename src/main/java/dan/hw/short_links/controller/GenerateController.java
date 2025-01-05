@@ -1,44 +1,43 @@
 package dan.hw.short_links.controller;
 
+import dan.hw.short_links.configuration.AppProperties;
 import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
-import dan.hw.short_links.model.LinkResponse;
-import dan.hw.short_links.model.StatusStub;
 import dan.hw.short_links.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.NoSuchAlgorithmException;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/generate")
 @RequiredArgsConstructor
-public class LinksController {
+public class GenerateController {
 
     private final LinkService linkService;
 
+    private final AppProperties appProperties;
 
-    @GetMapping("generate")
-    public String generatePage() {
+    @GetMapping
+    public String generatePage(Model model) {
+        model.addAttribute("linkRequest", new LinkRequest("",
+                "",
+                "",
+                appProperties.getRemainder()));
         return "generate";
     }
 
-    @PostMapping("generate")
+    @PostMapping
     public String generateString(
-            @RequestParam String userName,
-            @RequestParam String toDate,
-            @RequestParam Long remainder,
-            @RequestParam String origLink,
-            Model model) {
-        LinkRequest linkModel = new LinkRequest(userName, origLink, toDate, remainder);
+            @ModelAttribute LinkRequest linkRequest, Model model) {
         try {
-            String shortLink = linkService.generateShortLink(linkModel);
+            String shortLink = linkService.generateShortLink(linkRequest);
             model.addAttribute("shortLink", shortLink);
         } catch (NoSuchAlgorithmException | IncorrectDateException e) {
             model.addAttribute("shortLink", e.getMessage());
@@ -48,22 +47,5 @@ public class LinksController {
         return "generate";
     }
 
-    @GetMapping("get-link")
-    public String getLinkPage() {
-        return "get-link";
-    }
-
-    @PostMapping("get-link")
-    public String getLink(
-            @RequestParam String linkMasterId,
-            @RequestParam String shortLink,
-            Model model) {
-
-        LinkResponse linkResponse = new LinkResponse(linkMasterId, shortLink);
-        String origLink = linkService.getOrigLink(linkResponse);
-        model.addAttribute("origLink", origLink);
-
-        return "get-link";
-    }
 
 }

@@ -93,7 +93,7 @@ public class LinkService {
     @Transactional
     public String getOrigLink(LinkResponse linkResponse) {
         List<Link> existingLink =
-                linkRepository.findAllByUserAndShortLink(linkResponse.getId(), linkResponse.getShortLink());
+                linkRepository.findAllByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
         if (existingLink.isEmpty()) {
             return "Не найденно ни одной ссылки";
         }
@@ -115,7 +115,7 @@ public class LinkService {
     @Transactional
     public String editLink(LinkResponse linkResponse) {
         List<Link> existingLink =
-                linkRepository.findAllByUserAndShortLink(linkResponse.getId(), linkResponse.getShortLink());
+                linkRepository.findAllByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
         if (existingLink.isEmpty()) {
             return "Не найденно ни одной ссылки";
         }
