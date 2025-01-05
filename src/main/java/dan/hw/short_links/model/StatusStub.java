@@ -23,4 +23,8 @@ public enum StatusStub {
     public boolean isStatus() {
         return status;
     }
+
+    public static StatusStub getStatusStub(boolean status) {
+        return status ? STATUS_ON : STATUS_OFF;
+    }
 }

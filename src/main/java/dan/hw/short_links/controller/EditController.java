@@ -1,20 +1,22 @@
 package dan.hw.short_links.controller;
 
 import dan.hw.short_links.configuration.AppProperties;
+import dan.hw.short_links.exception.NotExistingLinkException;
 import dan.hw.short_links.model.LinkEdit;
+import dan.hw.short_links.model.LinkResponse;
 import dan.hw.short_links.model.StatusStub;
+import dan.hw.short_links.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/edit-link")
 @RequiredArgsConstructor
 public class EditController {
+
+    private final LinkService linkService;
 
     private final AppProperties appProperties;
 
@@ -29,12 +31,21 @@ public class EditController {
     }
 
     @PostMapping
-    public String editLink(@ModelAttribute LinkEdit linkEdit, Model model) {
+    public String editLink(@ModelAttribute LinkEdit linkEdit, @RequestParam("action") String action, Model model) {
+        if ("edit".equals(action)) {
+            // Логика для редактирования
+            model.addAttribute("message", "Сущность была отредактирована.");
+        } else if ("fill".equals(action)) {
+            try {
+                LinkEdit foundLink =
+                        linkService.findLink(new LinkResponse(linkEdit.getLinkMasterId(), linkEdit.getShortLink()));
+                model.addAttribute("linkEdit", foundLink);
+                model.addAttribute("message", "Форма была заполнена.");
+            } catch (NotExistingLinkException e) {
+                throw new RuntimeException(e);
+            }
 
-//        LinkResponse linkResponse = new LinkResponse(linkMasterId, shortLink);
-//        String origLink = linkService.getOrigLink(linkResponse);
-        model.addAttribute("origLink", "asdasd");
-
+        }
         return "edit-link";
     }
 }

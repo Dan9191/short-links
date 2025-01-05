@@ -34,23 +34,23 @@
             <li class="nav-link">Редактирование ссылки</li>
         </ul>
     </header>
-    <form id="scriptForm" th:action="@{/edit-link}" th:object="${linkEdit}" method="post" spellcheck="false">
+    <form th:action="@{/edit-link}" th:object="${linkEdit}" method="post">
         <div class="form-group mb-1">
             <label>UUID пользователя: <input class="form-control" type="text" id="linkMasterId" th:field="*{linkMasterId}" required></label><br>
-            <label>Время действия до:
-                <input class="form-control" type="text" id="toDate" th:field="*{toDate}"  placeholder="yyyy-MM-dd HH:mm">
-            </label><br>
-            <label>Количество применений: <input class="form-control" type="number" id="remainder" th:field="*{remainder}"
-                                                 required></label><br>
             <label>Короткая ссылка: <input class="form-control" type="text" id="shortLink" th:field="*{shortLink}" required></label><br>
-            <label for="statusStub" >Статус:
+            <label>Время действия до:
+                <input class="form-control" type="text" id="toDate" th:field="*{toDate}" placeholder="yyyy-MM-dd HH:mm">
+            </label><br>
+            <label>Количество применений: <input class="form-control" type="number" id="remainder" th:field="*{remainder}" required></label><br>
+            <label for="statusStub">Статус:
                 <select id="statusStub" class="form-control" th:field="*{statusStub}">
                     <option th:each="status : ${T(dan.hw.short_links.model.StatusStub).values()}"
                             th:value="${status}" th:text="${status.label}"></option>
                 </select>
             </label><br>
         </div>
-        <button class="btn btn-primary btn-sm" type="submit">Редактировать</button>
+        <button type="submit" name="action" value="edit" class="btn btn-primary btn-sm">Редактировать</button>
+        <button type="submit" name="action" value="fill" class="btn btn-secondary btn-sm">Заполнить</button>
     </form>
     <div class="mt-3" th:if="${shortLink != null}">
         <p><small>UUID пользователя: </small></p>

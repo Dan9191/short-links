@@ -135,6 +135,17 @@ public class LinkService {
         return link.getOrigLink();
     }
 
+    @Transactional
+    public LinkEdit findLink(LinkResponse linkResponse) throws NotExistingLinkException {
+        List<Link> existingLink =
+                linkRepository.findAllByUserAndShortLink(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+        if (existingLink.isEmpty()) {
+            throw new NotExistingLinkException(linkResponse.getLinkMasterId(), linkResponse.getShortLink());
+        }
+        Link link = existingLink.get(0);
+        return new LinkEdit(link);
+    }
+
     private LocalDateTime parseAndValidateDate(String dateStr) throws IncorrectDateException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         LocalDateTime parsedDate;

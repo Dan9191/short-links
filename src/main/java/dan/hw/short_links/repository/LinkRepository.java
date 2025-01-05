@@ -16,7 +16,7 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
         JOIN l.linkMaster lm
         WHERE lm.id = :linkMasterId
           AND l.shortLink = :shortLink
-          AND l.active is true;
+          AND l.active is true
     """)
     List<Link> findActiveLinkByUserAndShortLink(
             @Param("linkMasterId") String linkMasterId,
