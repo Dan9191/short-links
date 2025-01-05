@@ -12,5 +12,6 @@ import org.springframework.stereotype.Component;
 public class AppProperties {
     private String unit;
     private int amountToAdd;
+    private Long remainder;
 
 }

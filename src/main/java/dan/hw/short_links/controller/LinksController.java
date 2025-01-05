@@ -4,6 +4,7 @@ import dan.hw.short_links.exception.ExistingLinkException;
 import dan.hw.short_links.exception.IncorrectDateException;
 import dan.hw.short_links.model.LinkRequest;
 import dan.hw.short_links.model.LinkResponse;
+import dan.hw.short_links.model.StatusStub;
 import dan.hw.short_links.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -60,26 +61,6 @@ public class LinksController {
 
         LinkResponse linkResponse = new LinkResponse(linkMasterId, shortLink);
         String origLink = linkService.getOrigLink(linkResponse);
-        model.addAttribute("origLink", origLink);
-
-        return "get-link";
-    }
-
-    @GetMapping("edit-link")
-    public String editLinkPage() {
-        return "edit-link";
-    }
-
-    @PostMapping("edit-link")
-    public String editLink(
-            @RequestParam String linkMasterId,
-            @RequestParam String toDate,
-            @RequestParam Long remainder,
-            @RequestParam String origLink,
-            Model model) {
-
-//        LinkResponse linkResponse = new LinkResponse(linkMasterId, shortLink);
-//        String origLink = linkService.getOrigLink(linkResponse);
         model.addAttribute("origLink", origLink);
 
         return "get-link";
